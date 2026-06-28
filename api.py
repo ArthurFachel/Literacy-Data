@@ -81,9 +81,6 @@ def method_not_allowed(e):
     return jsonify({'error': 'Method not allowed'}), 405
 
 
-# ============================================
-# NEW: School Infrastructure (INEP) endpoints
-# ============================================
 
 @app.route('/school-infra', methods=['GET'])
 def school_infra():
@@ -149,10 +146,6 @@ def correlations():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
-# ============================================
-# NEW: Region-specific endpoints for interactivity
-# ============================================
 
 @app.route('/regions/<region>/school-infra', methods=['GET'])
 def region_school_infra(region: str):

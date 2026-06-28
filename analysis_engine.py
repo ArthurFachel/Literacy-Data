@@ -61,9 +61,6 @@ class LiteracyEngine:
         else:
             self.sinisa_mun = pd.DataFrame()
 
-    # ============================================
-    # INEP helpers
-    # ============================================
     def _load_inep(self, path: str):
         inep = pd.read_csv(path, encoding='latin-1', low_memory=False)
         inep['id_municipio_str'] = inep['id_municipio'].astype(str).str.replace('.0', '', regex=False)
@@ -72,7 +69,6 @@ class LiteracyEngine:
         inep['escola_publica'] = inep['rede'].isin(['Municipal', 'Estadual', 'Federal']).astype(int)
         inep['escola_privada'] = (inep['rede'] == 'Privada').astype(int)
 
-        # Aggregate public schools
         pub = inep[inep['escola_publica'] == 1].groupby('id_municipio_str').agg(
             total_publicas=('id_municipio', 'count'),
             pct_refeitorio_publica=('refeitorio', 'mean'),
@@ -92,9 +88,7 @@ class LiteracyEngine:
         self.inep_mun = total.merge(pub, on='id_municipio_str', how='left').merge(priv, on='id_municipio_str', how='left')
         self.inep_mun['razao_privada'] = (self.inep_mun['total_privadas'] / self.inep_mun['total_escolas']).fillna(0)
 
-    # ============================================
-    # SINISA helpers
-    # ============================================
+
     def _load_sinisa(self, path: str):
         sin = pd.read_excel(path, skiprows=7)
         sin = sin[sin['Codigo do IBGE'].notna() & (sin['Codigo do IBGE'] != 'Codigo do IBGE')].copy()
@@ -129,9 +123,6 @@ class LiteracyEngine:
 
         self.sinisa_mun = sin[['cod_IBGE', 'nat_class', 'saneamento_publico', 'saneamento_privado', 'cobertura_agua']].copy()
 
-    # ============================================
-    # API-facing join helpers
-    # ============================================
     def get_merged(self) -> pd.DataFrame:
         """Return master merged with INEP and SINISA."""
         df = self.df.copy()
@@ -207,9 +198,6 @@ class LiteracyEngine:
         stats.columns = ['regiao', 'municipios', 'media', 'mediana', 'minimo', 'maximo', 'desvio_padrao']
         return stats
 
-    # ============================================
-    # NEW: School infrastructure summary by region
-    # ============================================
     def school_infra_by_region(self) -> pd.DataFrame:
         """Return school infrastructure (INEP) aggregated by region."""
         df = self.get_merged()
@@ -227,9 +215,6 @@ class LiteracyEngine:
         ).round(3).reset_index()
         return agg
 
-    # ============================================
-    # NEW: Sanitation provider summary by region
-    # ============================================
     def sanitation_provider_by_region(self) -> pd.DataFrame:
         """Return sanitation provider (SINISA) statistics by region."""
         df = self.get_merged()
@@ -257,9 +242,6 @@ class LiteracyEngine:
         merged['pct_privado'] = (merged['count_privado'] / merged['total'] * 100).round(1)
         return merged.fillna(0)
 
-    # ============================================
-    # NEW: Region-specific school infrastructure
-    # ============================================
     def school_infra_by_region_single(self, region: str) -> dict:
         """Return school infrastructure details for a single region."""
         if region not in self.valid_regions:
@@ -280,9 +262,6 @@ class LiteracyEngine:
             'alfabetizacao_media': round(float(sub['taxa_alfabetizacao'].mean()), 2),
         }
 
-    # ============================================
-    # NEW: Region-specific sanitation provider
-    # ============================================
     def sanitation_provider_by_region_single(self, region: str) -> dict:
         """Return sanitation provider stats for a single region."""
         if region not in self.valid_regions:
@@ -305,40 +284,31 @@ class LiteracyEngine:
             'cobertura_privado': round(float(priv['cobertura_agua'].mean()), 1) if not priv.empty else None,
         }
 
-    # ============================================
-    # NEW: Correlations education/sanitation vs literacy
-    # ============================================
     def correlations(self) -> dict:
         """Return Pearson correlations between infra/sanitation and literacy."""
         df = self.get_merged().dropna(subset=['taxa_alfabetizacao'])
         result = {}
 
-        # Refeitório publico
         sub = df.dropna(subset=['pct_refeitorio_publica', 'taxa_alfabetizacao'])
         r, p = stats.pearsonr(sub['pct_refeitorio_publica'], sub['taxa_alfabetizacao'])
         result['refeitorio_publica'] = {'r': round(r, 3), 'p': round(p, 3), 'n': len(sub)}
 
-        # Refeitório privada
         sub = df.dropna(subset=['pct_refeitorio_privada', 'taxa_alfabetizacao'])
         r, p = stats.pearsonr(sub['pct_refeitorio_privada'], sub['taxa_alfabetizacao'])
         result['refeitorio_privada'] = {'r': round(r, 3), 'p': round(p, 3), 'n': len(sub)}
 
-        # Cozinha publica
         sub = df.dropna(subset=['pct_cozinha_publica', 'taxa_alfabetizacao'])
         r, p = stats.pearsonr(sub['pct_cozinha_publica'], sub['taxa_alfabetizacao'])
         result['cozinha_publica'] = {'r': round(r, 3), 'p': round(p, 3), 'n': len(sub)}
 
-        # Cozinha privada
         sub = df.dropna(subset=['pct_cozinha_privada', 'taxa_alfabetizacao'])
         r, p = stats.pearsonr(sub['pct_cozinha_privada'], sub['taxa_alfabetizacao'])
         result['cozinha_privada'] = {'r': round(r, 3), 'p': round(p, 3), 'n': len(sub)}
 
-        # Saneamento cobertura
         sub = df.dropna(subset=['cobertura_agua_pct', 'taxa_alfabetizacao'])
         r, p = stats.pearsonr(sub['cobertura_agua_pct'], sub['taxa_alfabetizacao'])
         result['cobertura_agua'] = {'r': round(r, 3), 'p': round(p, 3), 'n': len(sub)}
 
-        # Saneamento privado vs publico (dummy)
         sub = df[df['nat_class'].isin(['publico', 'privado'])].dropna(subset=['saneamento_privado', 'taxa_alfabetizacao'])
         r, p = stats.pearsonr(sub['saneamento_privado'], sub['taxa_alfabetizacao'])
         result['saneamento_privado_dummy'] = {'r': round(r, 3), 'p': round(p, 3), 'n': len(sub)}
