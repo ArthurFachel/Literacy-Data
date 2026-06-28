@@ -17,7 +17,7 @@ from scipy import stats
 import os
 from typing import Optional
 
-DATA_DIR = '/home/fachel/Desktop/Vscode/CPA-TF/data'
+DATA_DIR = ''
 
 MASTER_PATH = os.path.join(DATA_DIR, 'master_dataset_socioeconomico.csv')
 SIDRA_PATH = os.path.join(DATA_DIR, 'sidra_alfabetizacao_2022.csv')
