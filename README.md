@@ -10,6 +10,7 @@ Este projeto reúne um backend Python com uma API REST e uma interface de fronte
 - `Literacy-Data/api.py` — backend Flask que expõe os dados via HTTP
 - `Literacy-Data/analysis_engine.py` — motor de análise que carrega os dados e gera estatísticas
 - `Literacy-Data/frontend/` — interface de exploração com mapa interativo e painéis de comparação
+- `Literacy-Data/data/` — os dados estão em um drive, pode ter acesso via o link em data.txt
 
 ## Funcionalidades
 
