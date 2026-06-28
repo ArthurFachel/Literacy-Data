@@ -1,4 +1,4 @@
-# Comparação Regional de Alfabetização — Motor de Análise
+# Comparação Regional de Alfabetização
 
 Backend Python + API REST para comparar taxas de alfabetização entre as regiões do Brasil.
 
@@ -43,7 +43,3 @@ curl -X POST http://localhost:5001/regions/compare \
   -H 'Content-Type: application/json' \
   -d '{"regions": ["Norte", "Nordeste"]}'
 ```
-
-## Verificado
-
-Todos os endpoints testados: 5 regiões válidas, ordenação correta, casos de borda tratados (região inválida → 404 com erro descritivo), funciona com lista de regiões vazia.
