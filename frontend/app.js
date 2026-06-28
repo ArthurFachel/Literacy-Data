@@ -45,9 +45,6 @@ function initApp() {
   initCompareControls();
 }
 
-/* -------------------------------------------------- */
-/*  Dimension Tabs (top)                               */
-/* -------------------------------------------------- */
 function initDimensionTabs() {
   document.querySelectorAll('.dim-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -63,7 +60,6 @@ function switchDimension(dim) {
   document.querySelectorAll('.dim-btn').forEach(b => b.classList.remove('active'));
   document.querySelector(`.dim-btn[data-dim="${dim}"]`)?.classList.add('active');
 
-  // Clear display but keep selection
   if (isCompareMode) {
     showCompare();
   } else {
@@ -77,9 +73,6 @@ function updateMapLabel() {
   mapLabel.textContent = isCompareMode ? 'Selecione regiões para comparar' : `Selecione uma região em "${dimLabels[currentDim]}"`;
 }
 
-/* -------------------------------------------------- */
-/*  Map Interaction                                    */
-/* -------------------------------------------------- */
 function initMapInteractive() {
   const regioes = mapWrapper.querySelectorAll('.regiao');
   regioes.forEach(el => {
@@ -144,9 +137,6 @@ async function renderDimensionData(regiao) {
   else if (currentDim === 'alfabetizacao') await renderDimAlfabetizacao(regiao);
 }
 
-/* -------------------------------------------------- */
-/*  Compare Mode                                       */
-/* -------------------------------------------------- */
 function initCompareControls() {
   compareCheckbox.addEventListener('change', (e) => {
     isCompareMode = e.target.checked;
@@ -211,9 +201,6 @@ async function doCompare() {
   }
 }
 
-/* -------------------------------------------------- */
-/*  Dimension: Alfabetização Geral                     */
-/* -------------------------------------------------- */
 async function renderDimAlfabetizacao(regiao) {
   const [regionRes, extremesRes] = await Promise.all([
     fetch(`${API_URL}/regions/${encodeURIComponent(regiao)}`),
@@ -278,9 +265,6 @@ async function renderDimAlfabetizacao(regiao) {
   addSortListeners(regiao, regionData, extremesData);
 }
 
-/* -------------------------------------------------- */
-/*  Dimension: Escolas (INEP)                          */
-/* -------------------------------------------------- */
 async function renderDimEscolas(regiao) {
   const res = await fetch(`${API_URL}/regions/${encodeURIComponent(regiao)}/school-infra`);
   if (!res.ok) throw new Error(res.status);
@@ -322,9 +306,6 @@ async function renderDimEscolas(regiao) {
   dataDisplay.innerHTML = html;
 }
 
-/* -------------------------------------------------- */
-/*  Dimension: Saneamento (SINISA)                     */
-/* -------------------------------------------------- */
 async function renderDimSaneamento(regiao) {
   const res = await fetch(`${API_URL}/regions/${encodeURIComponent(regiao)}/sanitation-provider`);
   if (!res.ok) throw new Error(res.status);
@@ -374,11 +355,7 @@ async function renderDimSaneamento(regiao) {
   dataDisplay.innerHTML = html;
 }
 
-/* -------------------------------------------------- */
-/*  Dimension: Correlações                              */
-/* -------------------------------------------------- */
 async function renderDimCorrelacoes(regiao) {
-  // Correlations are global, but we highlight that this is for the selected region context
   const res = await fetch(`${API_URL}/correlations`);
   if (!res.ok) throw new Error(res.status);
   const data = await res.json();
